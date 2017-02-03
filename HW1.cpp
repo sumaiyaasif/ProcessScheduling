@@ -13,14 +13,19 @@ int main( ) {
    int c;
    string data;
    string duration;
-   vector<pair<string, int> > processes;
+   vector<pair<string, string> > processes;
+   //make sure last line in file is not empty
    while(!cin.eof()){
    	getline(cin, data, ' ');
    	getline(cin, duration);
-   	cout << data << endl;
-   	cout << duration << endl;
+   	processes.push_back(make_pair(data, duration));
    	
    }
+   for(int i = 0; i < processes.size(); i++)
+{
+     cout << processes[i].first << ", " << processes[i].second << endl;
+}
+
    
 
    return 0;
