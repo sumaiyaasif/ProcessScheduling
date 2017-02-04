@@ -12,6 +12,9 @@ using namespace std;
 
 
 vector<pair<string, int> > processes;
+int slice;
+bool readyQueueBusy = false;
+bool coreBusy = false;
 
 /* Reads file and stores it into a vector of pairs. Does not take any arguments. Does not output or return anything. */
 void readFile() {
@@ -34,11 +37,25 @@ void printProcesses() {
 	}
 }
 
+/* Get slice amount */
+int getSlice() {
+	for (int i = 0; i < processes.size(); i++) {
+		if (processes[i].first == "SLICE") {
+			slice = processes[i].second;
+			break;
+		}
+
+	}
+	return slice;
+}
+
 int main() {
 	readFile();
 	printProcesses();
-
-
-
+	
 	return 0;
 }
+
+
+
+
