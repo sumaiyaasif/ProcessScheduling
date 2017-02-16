@@ -26,6 +26,13 @@ void readFile() {
 		getline(cin, data, ' ');
 		getline(cin, duration);
 		durationInt = atoi(duration.c_str());
+		if(data == "SLICE"){
+			slice = durationInt;
+		}
+		while(data == "CORE" && durationInt > slice){
+			processes.push_back(make_pair(data, slice));
+			durationInt = durationInt - slice;
+		}
 		processes.push_back(make_pair(data, durationInt));
 	}
 }
