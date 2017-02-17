@@ -10,12 +10,9 @@ using namespace std;
 //Operating Systems
 //1 Feb 2017
 
-
-vector<pair<string, int> > processes;
-int cores;
+vector<pair<string, int> > dataInput;
+int totalCores;
 int slice;
-bool readyQueueBusy = false;
-bool coreBusy = false;
 
 /* Reads file and stores it into a vector of pairs. Breaks Core requests larger than slice allowance into multiple core requests. Does not take any arguments. Does not output or return anything. */
 void readFile() {
@@ -28,38 +25,29 @@ void readFile() {
 		getline(cin, duration);
 		durationInt = atoi(duration.c_str());
 		if(data == "NCORE"){
-			cores = durationInt;
+			totalCores = durationInt;
 		}
 		else if(data == "SLICE"){
 			slice = durationInt;
 		}
 		while(data == "CORE" && durationInt > slice){
-			processes.push_back(make_pair(data, slice));
+			dataInput.push_back(make_pair(data, slice));
 			durationInt = durationInt - slice;
 		}
-		processes.push_back(make_pair(data, durationInt));
+		dataInput.push_back(make_pair(data, durationInt));
 	}
 }
 
-/* Prints processes with their durations. Does not take any arguments. Does not return anything. */
-void printProcesses() {
-	for (int i = 0; i < processes.size(); i++) {
-		cout << processes[i].first << ", " << processes[i].second << endl;
-	}
-}
-
-void splitIndividualProcesses() {
-	for (int i = 0; i < processes.size(); i++) {
-		cout << processes[i].first << ", " << processes[i].second << endl;
+/* Prints dataInput with their durations. Does not take any arguments. Does not return anything. */
+void printdataInput() {
+	for (int i = 0; i < dataInput.size(); i++) {
+		cout << dataInput[i].first << ", " << dataInput[i].second << endl;
 	}
 }
 
 int main() {
 	readFile();
-	
+	printdataInput();
 	return 0;
 }
-
-
-
 
