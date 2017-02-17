@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-
+#include <list>
 
 using namespace std;
 
@@ -12,11 +12,12 @@ using namespace std;
 
 
 vector<pair<string, int> > processes;
+int cores;
 int slice;
 bool readyQueueBusy = false;
 bool coreBusy = false;
 
-/* Reads file and stores it into a vector of pairs. Does not take any arguments. Does not output or return anything. */
+/* Reads file and stores it into a vector of pairs. Breaks Core requests larger than slice allowance into multiple core requests. Does not take any arguments. Does not output or return anything. */
 void readFile() {
 	string data;
 	string duration;
@@ -26,7 +27,10 @@ void readFile() {
 		getline(cin, data, ' ');
 		getline(cin, duration);
 		durationInt = atoi(duration.c_str());
-		if(data == "SLICE"){
+		if(data == "NCORE"){
+			cores = durationInt;
+		}
+		else if(data == "SLICE"){
 			slice = durationInt;
 		}
 		while(data == "CORE" && durationInt > slice){
@@ -44,21 +48,14 @@ void printProcesses() {
 	}
 }
 
-/* Get slice amount */
-int getSlice() {
+void splitIndividualProcesses() {
 	for (int i = 0; i < processes.size(); i++) {
-		if (processes[i].first == "SLICE") {
-			slice = processes[i].second;
-			break;
-		}
-
+		cout << processes[i].first << ", " << processes[i].second << endl;
 	}
-	return slice;
 }
 
 int main() {
 	readFile();
-	printProcesses();
 	
 	return 0;
 }
