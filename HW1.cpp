@@ -48,6 +48,10 @@ void readFile() {
 		dataInput.push_back(make_pair(data, durationInt));
 	}
 
+	
+}
+
+void splitDataInputIntoIndividualProcesses(){
 	processVector.resize(numOfProcesses);
     int j = 0;
     int i = 0;
@@ -68,12 +72,13 @@ void readFile() {
 
 /* Prints dataInput with their durations. Does not take any arguments. Does not return anything. */
 void printdataInput() {
-	// for (int i = 0; i < dataInput.size(); i++) {
-	// 	cout << dataInput[i].first << ", " << dataInput[i].second << endl;
-	// }
+	for (int i = 0; i < dataInput.size(); i++) {
+		cout << dataInput[i].first << ", " << dataInput[i].second << endl;
+	}
+}
 
-	cout << processVector.size() << endl;
-
+/*Prints each process along with its list of events and its start times. Does not take any arguments. Does not return anything.*/
+void printIndividualProcesses(){
 	for (int i = 0; i < processVector.size(); i++) {
 		cout << "Start Time for process " << i << ": " << processVector[i].startTime << endl;
 		for (int j = 0; j < processVector[i].commands.size(); j++) {
@@ -84,7 +89,8 @@ void printdataInput() {
 
 int main() {
 	readFile();
-	printdataInput();
+	splitDataInputIntoIndividualProcesses();
+	printIndividualProcesses();
 	return 0;
 }
 
