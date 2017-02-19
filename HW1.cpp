@@ -13,8 +13,9 @@ class Process {
 	public:
 		int startTime;
 		vector<pair<string, int> > commands;
+		statusType processStatus;
 };
-
+enum statusType{RUNNING, TERMINATED};
 vector<pair<string, int> > dataInput;
 vector<Process> processVector;
 int totalCores;
@@ -32,7 +33,7 @@ void readFile() {
 		getline(cin, data, ' ');
 		getline(cin, duration);
 		durationInt = atoi(duration.c_str());
-		if(data == "NCORE"){
+		if(data == "NCORES"){
 			totalCores = durationInt;
 		}
 		else if(data == "SLICE"){
@@ -51,6 +52,7 @@ void readFile() {
 	
 }
 
+/*This splits the data read in into multiple Processes separated by the word "NEW". Does not take any arguments. Does not return anything. */
 void splitDataInputIntoIndividualProcesses(){
 	processVector.resize(numOfProcesses);
     int j = 0;
