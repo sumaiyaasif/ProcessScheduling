@@ -10,7 +10,7 @@ using namespace std;
 //Sumaiya Asif
 //Operating Systems
 //1 Feb 2017
-enum statusType{RUNNING, TERMINATED};
+enum statusType{READY, RUNNING, BLOCKED, TERMINATED};
 class Process {
 public:
     int pid;
@@ -51,6 +51,7 @@ void splitDataInputIntoIndividualProcesses(){
     int i = 0;
     while (i < dataInput.size()) {
         if(dataInput[i].first == "NEW"){
+            processVector[j].pid = j;
             if(i == 2){
                 processVector[j].firstLine = i + 1;
             }
@@ -147,11 +148,29 @@ int numOfBusyCores(){
     return numOfBusyCores;
 }
 
+void printReadyQueue(){
+    if(readyQueue.empty()){
+        cout << "EMPTY";
+    }
+
+}
+
+void printDiskQueue(){
+    if(diskQueue.empty()){
+        cout << "EMPTY";
+    }
+    
+}
+
 void printSummary(){
-    cout << "CURRENT STATE OF THE SYSTEM AT t =" << endl;
+    cout << "CURRENT STATE OF THE SYSTEM AT t = " << simClock <<  endl;
     cout << "Current number of busy cores: " << numOfBusyCores() << endl;
     cout << "READY QUEUE: " << endl;
+    printReadyQueue();
+    cout << endl;
     cout << "DISK QUEUE: " << endl;
+    printDiskQueue();
+    cout << endl;
     cout << "PROCESS TABLE: " << endl;
     for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
         cout << "Process: " << j->pid << " started at " << j->startTime << " ms and is " << j->statusType << endl;
