@@ -11,20 +11,15 @@ using namespace std;
 //Operating Systems
 //1 Feb 2017
 enum statusType{RUNNING, TERMINATED};
-enum processStage{readyQue, core, diskQue, disk, display, notStarted, terminated};
-
 class Process {
 public:
+    int pid;
     int startTime;
-    vector<pair<string, int> > commands;
-    statusType processStatus;
-    processStage processStage;
-};
-
-class Core {
-public:
-    bool empty;
-    int nextFreeTime;
+    int firstLine;
+    int lastLine;
+    int currentLine;
+    queue<pair<string, int> > commands;
+    statusType statusType;
 };
 
 class Disk {
@@ -33,16 +28,48 @@ public:
     int nextFreeTime;
 };
 
+
 queue<Process> readyQueue;
 queue<Process> diskQueue;
-
-vector<pair<string, int> > dataInput;
 vector<Process> processVector;
-vector<Core> coreVector;
-int totalCores;
-int slice;
+vector<pair<string, int> > dataInput;
 
+
+int slice;
 int numOfProcesses = 0;
+int simClock = 0;
+int requestedTime = 0;
+int pa = 0;
+int availableCores;
+list<int> totalCores;
+
+
+/* This splits the data read in into multiple Processes separated by the word "NEW". Does not take any arguments. Does not return anything. */
+void splitDataInputIntoIndividualProcesses(){
+    processVector.resize(numOfProcesses);
+    int j = 0;
+    int i = 0;
+    while (i < dataInput.size()) {
+        if(dataInput[i].first == "NEW"){
+            if(i == 2){
+                processVector[j].firstLine = i + 1;
+            }
+            else{
+                processVector[j].firstLine = i;
+            }
+            processVector[j].startTime = dataInput[i].second;
+            i++;
+            while (dataInput[i].first != "NEW" && i < dataInput.size()){
+                processVector[j].lastLine = i -1;
+                i++;
+            }
+            j++;
+        } else {
+            i++;
+        }
+    }
+}
+
 /* Reads file and stores it into a vector of pairs. Breaks Core requests larger than slice allowance into multiple core requests. Does not take any arguments. Does not output or return anything. */
 void readFile() {
     string data;
@@ -55,8 +82,8 @@ void readFile() {
         getline(infile, data, ' ');
         getline(infile, duration);
         durationInt = atoi(duration.c_str());
-        if(data == "NCORE"){
-            totalCores = durationInt;
+        if(data == "NCORES"){
+            totalCores.assign (durationInt, 0);
         }
         else if(data == "SLICE"){
             slice = durationInt;
@@ -70,26 +97,7 @@ void readFile() {
         }
         dataInput.push_back(make_pair(data, durationInt));
     }
-}
-
-/*This splits the data read in into multiple Processes separated by the word "NEW". Does not take any arguments. Does not return anything. */
-void splitDataInputIntoIndividualProcesses(){
-    processVector.resize(numOfProcesses);
-    int j = 0;
-    int i = 0;
-    while (i < dataInput.size()) {
-        if(dataInput[i].first == "NEW"){
-            processVector[j].startTime = dataInput[i].second;
-            i++;
-            while (dataInput[i].first != "NEW" && i < dataInput.size()){
-                processVector[j].commands.push_back(make_pair(dataInput[i].first, dataInput[i].second));
-                i++;
-            }
-            j++;
-        } else {
-            i++;
-        }
-    }
+    splitDataInputIntoIndividualProcesses();
 }
 
 /* Prints dataInput with their durations. Does not take any arguments. Does not return anything. */
@@ -99,54 +107,66 @@ void printdataInput() {
     }
 }
 
-/*Prints each process along with its list of events and its start times. Does not take any arguments. Does not return anything.*/
+/* Prints each process along with its list of events and its start times. Should not use this for the program as it pops off the commands from each process but only using to help build program. Does not take any arguments. Does not return anything.*/
 void printIndividualProcesses() {
     for (int i = 0; i < processVector.size(); i++) {
         cout << "Start Time for process " << i << ": " << processVector[i].startTime << endl;
-        for (int j = 0; j < processVector[i].commands.size(); j++) {
-            cout << processVector[i].commands[j].first << ", " << processVector[i].commands[j].second << endl;
+        cout << "number of commands in process " << i << ":" << processVector[i].commands.size() << endl;
+        int processVectorCommandsSize = processVector[i].commands.size(); //setting size now because when we pop, the size changes which lead to not each one getting printed
+        for (int j = 0; j < processVectorCommandsSize; j++) {
+            cout << processVector[i].commands.front().first << ", " << processVector[i].commands.front().second << endl;
+            processVector[i].commands.pop();
         }
     }
 }
 
+/* Counts number of processes that have gone through the scheduler and have completed all their commands. Returns the number of those completed processes. Takes no arguments.*/
 int countTerminatedProcesses(){
     int terminatedProcesses = 0;
     for(int i = 0; i < processVector.size(); i++){
-        if(processVector[i].processStatus == TERMINATED ){
+        if(processVector[i].statusType == TERMINATED ){
             terminatedProcesses++;
         }
     }
     return terminatedProcesses;
 }
 
-void createCoreObjects(){
-    int coresCreated = 0;
-    int i = 0;
-    while (coresCreated < totalCores){
-        coreVector[i].empty = true;
-        i++;
+void processHandler(){
+    if (processVector[pa].startTime == simClock ){
+        
     }
 }
-void processHandler(){
-    int i = 0;
-    int j = 0;
-    if(processVector[i].startTime == 0){
-        //put process into core for requested time
-        //mark core busy until requested time
-        if(processVector[i++].startTime < coreVector[j].nextFreeTime){
-            processVector[i++].processStage = readyQue;
-            readyQueue.push(processVector[i++]);
+
+int numOfBusyCores(){
+    int numOfBusyCores = 0;
+    for(list<int>::iterator j = totalCores.begin(); j != totalCores.end(); j++){
+        if(*j == 1){
+            numOfBusyCores++;
         }
+    }
+    return numOfBusyCores;
+}
+
+void printSummary(){
+    cout << "CURRENT STATE OF THE SYSTEM AT t =" << endl;
+    cout << "Current number of busy cores: " << numOfBusyCores() << endl;
+    cout << "READY QUEUE: " << endl;
+    cout << "DISK QUEUE: " << endl;
+    cout << "PROCESS TABLE: " << endl;
+    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+        cout << "Process: " << j->pid << " started at " << j->startTime << " ms and is " << j->statusType << endl;
     }
     
 }
 
 int main() {
     readFile();
-    splitDataInputIntoIndividualProcesses();
-    printIndividualProcesses();
-    while (countTerminatedProcesses() < processVector.size()){
-        processHandler();
-    }
+    printSummary();
+//    printIndividualProcesses();
+//    while (countTerminatedProcesses() < processVector.size()){
+//        processHandler();
+//        simClock++;
+//    }
     return 0;
 }
+
