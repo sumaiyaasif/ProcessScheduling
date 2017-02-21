@@ -51,12 +51,15 @@ void splitDataInputIntoIndividualProcesses(){
     int i = 0;
     while (i < dataInput.size()) {
         if(dataInput[i].first == "NEW"){
+            processVector[j].statusType = READY;
             processVector[j].pid = j;
             if(i == 2){
                 processVector[j].firstLine = i + 1;
+                processVector[j].currentLine = i + 1;
             }
             else{
                 processVector[j].firstLine = i;
+                processVector[j].currentLine = i;
             }
             processVector[j].startTime = dataInput[i].second;
             i++;
@@ -159,9 +162,19 @@ void printDiskQueue(){
     if(diskQueue.empty()){
         cout << "EMPTY";
     }
-    
+    else{
+        for (int i = 0; i < diskQueue.size(); i++){
+            cout << diskQueue.front().pid << " ";
+            diskQueue.push(diskQueue.front());
+            diskQueue.pop();
+        }
+    }
 }
 
+void printProcessStatus(statusType status){
+    if(status == READY)
+        cout << "READY";
+}
 void printSummary(){
     cout << "CURRENT STATE OF THE SYSTEM AT t = " << simClock <<  endl;
     cout << "Current number of busy cores: " << numOfBusyCores() << endl;
@@ -178,9 +191,18 @@ void printSummary(){
     
 }
 
+void printProcessTable(){
+    cout << "PROCESS TABLE: " << endl;
+    cout << "Process:   startTime   startLine   endLine    currentLine    status" << endl;
+    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+        cout << j->pid <<  "             " << j->startTime << "          " << j->firstLine << "           " << j->lastLine << "             " << j->currentLine << "          ";
+        printProcessStatus(j->statusType);
+        cout << endl;
+    }
+}
 int main() {
     readFile();
-    printSummary();
+    printProcessTable();
 //    printIndividualProcesses();
 //    while (countTerminatedProcesses() < processVector.size()){
 //        processHandler();
