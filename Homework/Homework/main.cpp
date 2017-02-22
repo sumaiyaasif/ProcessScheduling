@@ -28,6 +28,11 @@ public:
     int nextFreeTime;
 };
 
+class Core{
+public:
+    bool occupied = false;
+    int completionTime;
+};
 
 queue<Process> readyQueue;
 queue<Process> diskQueue;
@@ -39,9 +44,9 @@ int slice;
 int numOfProcesses = 0;
 int simClock = 0;
 int requestedTime = 0;
-int pa = 0;
+int locInDataTable = 0;
 int availableCores;
-list<int> totalCores;
+vector<Core> coreVector;
 
 
 /* This splits the data read in into multiple Processes separated by the word "NEW". Does not take any arguments. Does not return anything. */
@@ -54,12 +59,12 @@ void splitDataInputIntoIndividualProcesses(){
             processVector[j].statusType = READY;
             processVector[j].pid = j;
             if(i == 2){
-                processVector[j].firstLine = i + 1;
-                processVector[j].currentLine = i + 1;
-            }
-            else{
                 processVector[j].firstLine = i;
                 processVector[j].currentLine = i;
+            }
+            else{
+                processVector[j].firstLine = i-1;
+                processVector[j].currentLine = i-1;
             }
             processVector[j].startTime = dataInput[i].second;
             i++;
@@ -87,7 +92,7 @@ void readFile() {
         getline(infile, duration);
         durationInt = atoi(duration.c_str());
         if(data == "NCORES"){
-            totalCores.assign (durationInt, 0);
+            coreVector.resize(durationInt);
         }
         else if(data == "SLICE"){
             slice = durationInt;
@@ -135,27 +140,46 @@ int countTerminatedProcesses(){
     return terminatedProcesses;
 }
 
-void processHandler(){
-    if (processVector[pa].startTime == simClock ){
-        
-    }
-}
-
 int numOfBusyCores(){
     int numOfBusyCores = 0;
-    for(list<int>::iterator j = totalCores.begin(); j != totalCores.end(); j++){
-        if(*j == 1){
+    for(vector<Core>::iterator j = coreVector.begin(); j != coreVector.end(); j++){
+        if(j->occupied){
             numOfBusyCores++;
         }
     }
     return numOfBusyCores;
 }
 
+void printProcessStatus(statusType status){
+    if(status == READY)
+        cout << "READY";
+    if(status == RUNNING)
+        cout << "RUNNING";
+    if(status == BLOCKED)
+        cout << "BLOCKED";
+    if(status == TERMINATED)
+        cout << "TERMINATED";
+}
+void printProcessTable(){
+    cout << "PROCESS TABLE: " << endl;
+    cout << "Process:   startTime   startLine   endLine    currentLine    status" << endl;
+    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+        cout << j->pid <<  "             " << j->startTime << "          " << j->firstLine << "           " << j->lastLine << "             " << j->currentLine << "          ";
+        printProcessStatus(j->statusType);
+        cout << endl;
+    }
+}
 void printReadyQueue(){
     if(readyQueue.empty()){
         cout << "EMPTY";
     }
-
+    else{
+        for (int i = 0; i < readyQueue.size(); i++){
+            cout << "Process: " << readyQueue.front().pid << " ";
+            readyQueue.push(readyQueue.front());
+            readyQueue.pop();
+        }
+    }
 }
 
 void printDiskQueue(){
@@ -164,17 +188,13 @@ void printDiskQueue(){
     }
     else{
         for (int i = 0; i < diskQueue.size(); i++){
-            cout << diskQueue.front().pid << " ";
+            cout << "Process: " << diskQueue.front().pid << " ";
             diskQueue.push(diskQueue.front());
             diskQueue.pop();
         }
     }
 }
 
-void printProcessStatus(statusType status){
-    if(status == READY)
-        cout << "READY";
-}
 void printSummary(){
     cout << "CURRENT STATE OF THE SYSTEM AT t = " << simClock <<  endl;
     cout << "Current number of busy cores: " << numOfBusyCores() << endl;
@@ -186,28 +206,62 @@ void printSummary(){
     cout << endl;
     cout << "PROCESS TABLE: " << endl;
     for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
-        cout << "Process: " << j->pid << " started at " << j->startTime << " ms and is " << j->statusType << endl;
+        cout << "Process: " << j->pid << " started at " << j->startTime << " ms and is ";
+        printProcessStatus(j->statusType);
+        cout << endl;
+        
     }
     
 }
-
-void printProcessTable(){
-    cout << "PROCESS TABLE: " << endl;
-    cout << "Process:   startTime   startLine   endLine    currentLine    status" << endl;
-    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
-        cout << j->pid <<  "             " << j->startTime << "          " << j->firstLine << "           " << j->lastLine << "             " << j->currentLine << "          ";
-        printProcessStatus(j->statusType);
-        cout << endl;
+void processHandler(Process &process){
+    if (dataInput[process.currentLine].first == "NEW" && dataInput[process.currentLine].second == simClock){
+        readyQueue.push(process);
+        int eventStartTime = simClock;
+        if(numOfBusyCores() < coreVector.size()){
+            readyQueue.pop();
+            process.currentLine++; //go to Core command
+            for(vector<Core>::iterator j = coreVector.begin(); j != coreVector.end(); j++){
+                if(j->occupied == false){
+                    j->occupied = true;
+                    j->completionTime = eventStartTime + dataInput[process.currentLine].second;
+                    if(j->completionTime < simClock){
+                        j->occupied = false;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    else{
+        process.currentLine++;
     }
 }
+
+
+
+
+
+
+
+
 int main() {
     readFile();
-    printProcessTable();
-//    printIndividualProcesses();
-//    while (countTerminatedProcesses() < processVector.size()){
-//        processHandler();
-//        simClock++;
-//    }
+    locInDataTable = 3 + processVector.size();
+    while (!(locInDataTable == int(dataInput.size()))){
+        for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+            if(j->currentLine < j-> lastLine){
+                processHandler(*j);
+                locInDataTable++;
+            }
+            else{
+                printSummary();
+                processVector.erase(j);
+            }
+            
+        }
+        simClock++;
+        //printProcessTable();
+    }
     return 0;
 }
 
