@@ -18,7 +18,8 @@ public:
     int firstLine;
     int lastLine;
     int currentLine;
-    queue<pair<string, int> > commands;
+    int processCompletionTime;
+    int eventCompletionTime;
     statusType statusType;
 };
 
@@ -31,7 +32,8 @@ public:
 class Core{
 public:
     bool occupied = false;
-    int completionTime;
+    int coreCompletionTime;
+    Process pid;
 };
 
 queue<Process> readyQueue;
@@ -44,10 +46,9 @@ int slice;
 int numOfProcesses = 0;
 int simClock = 0;
 int requestedTime = 0;
-int locInDataTable = 0;
 int availableCores;
 vector<Core> coreVector;
-
+int lastEventEndTime;
 
 /* This splits the data read in into multiple Processes separated by the word "NEW". Does not take any arguments. Does not return anything. */
 void splitDataInputIntoIndividualProcesses(){
@@ -63,13 +64,13 @@ void splitDataInputIntoIndividualProcesses(){
                 processVector[j].currentLine = i;
             }
             else{
-                processVector[j].firstLine = i-1;
-                processVector[j].currentLine = i-1;
+                processVector[j].firstLine = i;
+                processVector[j].currentLine = i;
             }
             processVector[j].startTime = dataInput[i].second;
             i++;
             while (dataInput[i].first != "NEW" && i < dataInput.size()){
-                processVector[j].lastLine = i -1;
+                processVector[j].lastLine = i;
                 i++;
             }
             j++;
@@ -117,17 +118,17 @@ void printdataInput() {
 }
 
 /* Prints each process along with its list of events and its start times. Should not use this for the program as it pops off the commands from each process but only using to help build program. Does not take any arguments. Does not return anything.*/
-void printIndividualProcesses() {
-    for (int i = 0; i < processVector.size(); i++) {
-        cout << "Start Time for process " << i << ": " << processVector[i].startTime << endl;
-        cout << "number of commands in process " << i << ":" << processVector[i].commands.size() << endl;
-        int processVectorCommandsSize = processVector[i].commands.size(); //setting size now because when we pop, the size changes which lead to not each one getting printed
-        for (int j = 0; j < processVectorCommandsSize; j++) {
-            cout << processVector[i].commands.front().first << ", " << processVector[i].commands.front().second << endl;
-            processVector[i].commands.pop();
-        }
-    }
-}
+//void printIndividualProcesses() {
+//    for (int i = 0; i < processVector.size(); i++) {
+//        cout << "Start Time for process " << i << ": " << processVector[i].startTime << endl;
+//        cout << "number of commands in process " << i << ":" << processVector[i].commands.size() << endl;
+//        int processVectorCommandsSize = processVector[i].commands.size(); //setting size now because when we pop, the size changes which lead to not each one getting printed
+//        for (int j = 0; j < processVectorCommandsSize; j++) {
+//            cout << processVector[i].commands.front().first << ", " << processVector[i].commands.front().second << endl;
+//            processVector[i].commands.pop();
+//        }
+//    }
+//}
 
 /* Counts number of processes that have gone through the scheduler and have completed all their commands. Returns the number of those completed processes. Takes no arguments.*/
 int countTerminatedProcesses(){
@@ -213,55 +214,125 @@ void printSummary(){
     }
     
 }
-void processHandler(Process &process){
-    if (dataInput[process.currentLine].first == "NEW" && dataInput[process.currentLine].second == simClock){
-        readyQueue.push(process);
-        int eventStartTime = simClock;
-        if(numOfBusyCores() < coreVector.size()){
-            readyQueue.pop();
-            process.currentLine++; //go to Core command
-            for(vector<Core>::iterator j = coreVector.begin(); j != coreVector.end(); j++){
-                if(j->occupied == false){
-                    j->occupied = true;
-                    j->completionTime = eventStartTime + dataInput[process.currentLine].second;
-                    if(j->completionTime < simClock){
-                        j->occupied = false;
-                    }
-                    break;
+void coreRequest(Process &process){
+    int eventStartTime = simClock;
+    if(dataInput[process.currentLine].first == "NEW"){
+        process.currentLine++; //go to Core command if its a new process otherwise stay on line
+    }
+    if(numOfBusyCores() < coreVector.size()){
+        cout << "THERE IS A FREE CORE. POP PROCESS OUT OF READY QUEUE" << endl;
+        readyQueue.pop();
+        for(vector<Core>::iterator x = coreVector.begin(); x != coreVector.end(); x++){
+            if(x->occupied == false){
+                cout << "TAKE A CORE " << endl;
+                x->occupied = true;
+                x->pid = process;
+                x->coreCompletionTime = eventStartTime + dataInput[process.currentLine].second;
+                cout << "EVENT WILL GO FROM : " << eventStartTime << " TILL " << x->coreCompletionTime << endl;
+                process.eventCompletionTime = x->coreCompletionTime;
+                lastEventEndTime = x->coreCompletionTime;
+                if(x->coreCompletionTime > simClock){
+                    x->occupied = true;
+                    process.statusType = RUNNING;
                 }
+                break;
             }
         }
+   
     }
     else{
-        process.currentLine++;
+        cout << "THERE ARE NO FREE CORES. STAY IN READY QUEUE." << endl;
     }
+
+}
+void toReadyQueue(Process &process){
+    readyQueue.push(process);
+    coreRequest(process);
+    
 }
 
+void processHandler(Process &process){
+    if(dataInput[process.currentLine].first == "CORE"){
+        cout << "Recieved a new CORE request" << endl;
+        toReadyQueue(process);
+        
+    }
+    else if(process.statusType == RUNNING){
+        //
+    }
+    
+}
 
-
-
-
-
-
-
+bool checkIfProcessesRunning(){
+    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+        if(!(j->statusType == TERMINATED)){
+            return true;
+        }
+    }
+    return false;
+}
+// ones a command completes = currentLine++;
 int main() {
     readFile();
-    locInDataTable = 3 + processVector.size();
-    while (!(locInDataTable == int(dataInput.size()))){
-        for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
-            if(j->currentLine < j-> lastLine){
-                processHandler(*j);
-                locInDataTable++;
+    
+    // START processes
+    simClock = 0;
+    for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){
+        cout << "FIRST EVENT PROCESS " << j->pid << endl;
+        simClock = j->startTime; // set clock to the process startTime
+        cout << "simClock " << simClock << endl;
+        toReadyQueue(*j);   // send process to readyQueue
+    }
+    while (checkIfProcessesRunning()){ // While we are not at the end of our dataTable
+        for(vector<Process>::iterator j = processVector.begin(); j != processVector.end(); j++){ // Go through vectors 0 and 1 again and again
+            if(processVector.size() > 0){
+                if(j->currentLine < j-> lastLine){ // if currentLine is not the last line for that process
+                    if(j-> currentLine-1 != j-> firstLine && (lastEventEndTime == simClock)){ // if currentLine is not the first CORE request
+                        processHandler(*j); // do some scheduling
+                        cout << "simClock " << simClock << endl;
+                    }
+                    
+                }
+                else if(j->currentLine == j->lastLine){
+                    processHandler(*j);
+                    if(j->processCompletionTime == simClock){
+                        j->statusType = TERMINATED;
+                        printSummary();
+                    }
+                    
+                }
+                // check if any of the cores have freed up and moves whatever is in the queue into them
+                for(vector<Core>::iterator x = coreVector.begin(); x != coreVector.end(); x++){
+                    if(x->coreCompletionTime == simClock){
+                        x-> occupied = false;   // change the core status to free
+                        j->currentLine += 1;
+                        cout << "CORE just freed up" << endl;
+                        if(!readyQueue.empty()){    // move whatever is in the readyQueue to a core
+                            
+                            coreRequest(readyQueue.front());
+                            
+                        }
+                    }
+                }
             }
             else{
-                printSummary();
-                processVector.erase(j);
+                exit(0);
             }
             
         }
+//        if(j->processCompletionTime == simClock){
+//            j->currentLine++;
+//        }
         simClock++;
-        //printProcessTable();
+        if(simClock == 154){
+            cout << "hele";
+            if(simClock == 20){
+                cout << "LOL";
+            }
+        }
+        
     }
+    
     return 0;
 }
 
