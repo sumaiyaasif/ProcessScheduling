@@ -13,6 +13,21 @@ void error(const char *msg)
     perror(msg);
     exit(1);
 }
+void readFile(){
+    FILE *fp;
+    char buff[255];
+
+    fp = fopen("sample.txt", "r");
+    char *dataInput[2][5];
+    int i = 0;
+    while(fscanf(fp, "%s", buff)!=EOF){
+        //fscanf(fp, "%s", buff);
+        dataInput[0][i] = buff;
+        //printf("1 : %s\n", buff );
+        printf("[0][%i]: %s\n", i, dataInput[0][i]);
+        i++;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +37,7 @@ int main(int argc, char *argv[])
      struct sockaddr_in serv_addr, cli_addr;
      int n;
      int portNumber;
+     readFile();
      printf("Enter server port number: ");
      scanf("%d", &portNumber);
 
