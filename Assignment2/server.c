@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-char* dataInput[5][50];
+char* dataInput[1024][50];
 
 void error(const char *msg)
 {
@@ -19,7 +19,7 @@ int getNumberOfLines(){
     FILE *fp;
     int lines = 1;
     int ch = 0;
-    fp = fopen("sample.txt", "r");
+    fp = fopen("sample2.txt", "r");
     while(!feof(fp)){
         ch = fgetc(fp);
         if(ch == '\n')
@@ -41,7 +41,7 @@ void printDataArray(){
 void readFile(){
     FILE *fp;
     int lines = getNumberOfLines();
-    fp = fopen("sample.txt", "r");
+    fp = fopen("sample2.txt", "r");
     printf("Number of lines in file: %i\n", lines);
     
     for(int i=0; i < lines; i++){
@@ -56,7 +56,7 @@ void readFile(){
     }
    
     fclose(fp);
-  //  printDataArray();
+    //printDataArray();
 }
 
 int main(int argc, char *argv[])
