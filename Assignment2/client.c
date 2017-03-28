@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     fgets(portNumber, 7, stdin);
 
     portno = atoi(portNumber);
-    printf("This is your port number: %s\n", portNumber);
+    printf("This is your port number (5): %s\n", portNumber);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");

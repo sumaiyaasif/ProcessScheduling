@@ -61,6 +61,7 @@ void readFile(){
 
 int main(int argc, char *argv[])
 {
+    for(;;){
      int sockfd, newsockfd;
      socklen_t clilen;
      char userName[256];
@@ -114,11 +115,11 @@ int main(int argc, char *argv[])
      char output[200];
      snprintf(output, sizeof output, "The public key for user %s is %s", userName, keyFound);
      //printf("This is my output: %s", output);
-     n = write(newsockfd,output, 300);
+     n = write(newsockfd,output, 400);
      if (n < 0) error("ERROR writing to socket");
      close(newsockfd);
      close(sockfd);
-     return 0;
+     //return 0;
     }
-     
+     }
 }
