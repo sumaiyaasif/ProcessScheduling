@@ -36,8 +36,6 @@ void printDataArray(){
         printf("[0][%i]: %s\n", i, dataInput[i][0]);
         printf("[1][%i]: %s\n", i, dataInput[i][1]);
     }
-   // printf("[0][%i]: %s\n", i, dataInput[i][0]);
-   // printf("[1][%i]: %s\n", i, dataInput[i][1]);
 }
 
 void readFile(){
@@ -55,12 +53,10 @@ void readFile(){
         
         fscanf(fp, "%s", buff2);
         dataInput[i][1] = buff2;
-       
-
     }
    
     fclose(fp);
-    printDataArray();
+  //  printDataArray();
 }
 
 int main(int argc, char *argv[])
@@ -96,14 +92,33 @@ int main(int argc, char *argv[])
      n = read(newsockfd,userName,255);
      if (n < 0) error("ERROR reading from socket");
      printf("Here is the user name: %s\n",userName);
-     int isEqual = strncmp(userName, "jim", 3);
-     printf("equal %i", isEqual);
-     if(strncmp(userName, "jim", 3) == 0){
+     int isEqual = strcmp(userName, dataInput[2][0]);
+     int lines = getNumberOfLines();
+     char keyFound[255];
+     if(strcmp(userName, "Terminate") == 10){
+        close(newsockfd);
+        close(sockfd);
+        return 0;
+     }
+     else{
+        //go through array and find equal matching username
+       for(int i=0; i < lines; i++){
+        if(strcmp(userName, dataInput[i][0]) == 10){
+           // printf("[1][%i]: %s\n", i, dataInput[i][1]);
+            strcpy(keyFound, dataInput[i][1]);
+        }
+        }
+        if(strncmp(userName, "jim", 3) == 0){
         printf("jim found");
      }
-     n = write(newsockfd,"I got your message",18);
+     char output[200];
+     snprintf(output, sizeof output, "The public key for user %s is %s", userName, keyFound);
+     //printf("This is my output: %s", output);
+     n = write(newsockfd,output, 300);
      if (n < 0) error("ERROR writing to socket");
      close(newsockfd);
      close(sockfd);
      return 0;
+    }
+     
 }
