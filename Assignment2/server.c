@@ -13,22 +13,49 @@ void error(const char *msg)
     perror(msg);
     exit(1);
 }
+int getNumberOfLines(){
+    FILE *fp;
+    int lines = 1;
+    int ch = 0;
+    fp = fopen("sample.txt", "r");
+    while(!feof(fp)){
+        ch = fgetc(fp);
+        if(ch == '\n')
+        {
+            lines++;
+        }
+    }
+    fclose(fp);
+    return lines;
+}
+
 void readFile(){
     FILE *fp;
-    char buff[255];
-
+    int lines = getNumberOfLines();
     fp = fopen("sample.txt", "r");
+    printf("Number of lines in file: %i\n", lines);
     char *dataInput[2][5];
     int i = 0;
-    while(fscanf(fp, "%s", buff)!=EOF){
+    char buff[255];
+    while(lines > 0){
         //fscanf(fp, "%s", buff);
+        fscanf(fp, "%s", buff);
         dataInput[0][i] = buff;
-        //printf("1 : %s\n", buff );
         printf("[0][%i]: %s\n", i, dataInput[0][i]);
+        fscanf(fp, "%s", buff);
+        dataInput[1][i] = buff;
+        printf("[1][%i]: %s\n", i, dataInput[1][i]);
+        lines--;
         i++;
     }
 }
-
+// void printDataArray(){
+//     int i = 0;
+//     while(fscanf(fp, "%s", buff)!=EOF){
+//         printf("[0][%i]: %s\n", i, dataInput[0][i]);
+//         i++;
+//     }
+// }
 int main(int argc, char *argv[])
 {
      int sockfd, newsockfd;
