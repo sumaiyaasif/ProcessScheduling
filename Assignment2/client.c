@@ -21,23 +21,18 @@ int main(int argc, char *argv[])
     char userNameRequested[256];
     char portNumber[8];
     char serverName[9];
-    // if (argc < 3) {
-    //    fprintf(stderr,"usage %s hostname port\n", argv[0]);
-    //    exit(0);
-    // }
-    // portno = atoi(argv[2]);
     printf("Please enter server name: ");
     bzero(serverName, 9);
     bzero(portNumber, 8);
     fgets(serverName, 11, stdin);
-    printf("This is your server name: %s\n", serverName);
+    //printf("This is your server name: %s\n", serverName);
     
-    printf("Please enter port number: ");
+    printf("Please enter port number (5 length): ");
 
     fgets(portNumber, 7, stdin);
 
     portno = atoi(portNumber);
-    printf("This is your port number (5): %s\n", portNumber);
+    //printf("This is your port number (5 length): %s\n", portNumber);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
@@ -51,7 +46,7 @@ int main(int argc, char *argv[])
         printf("Not a valid server");
         exit(0);
     }
-    printf("Name: %s\n", server->h_name);
+    //printf("Name: %s\n", server->h_name);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);

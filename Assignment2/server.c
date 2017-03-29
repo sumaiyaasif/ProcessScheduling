@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
      int n;
      int portNumber;
      readFile();
-     printf("Enter server port number: ");
+     printf("Enter server port number (5 length): ");
      scanf("%d", &portNumber);
 
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -121,5 +121,5 @@ int main(int argc, char *argv[])
      close(sockfd);
      //return 0;
     }
-     }
+    }
 }
