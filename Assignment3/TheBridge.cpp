@@ -20,7 +20,7 @@ int vehicleWeightInt;
 int timeToCrossInt;
 
 struct thread_data{
-   int  thread_id;
+   string  thread_id;
    char *message;
 };
 
@@ -35,6 +35,9 @@ void *PrintHello(void *threadarg) {
 }
 
 void readFile(){
+	pthread_t threads[NUM_THREADS];
+	struct thread_data td[NUM_THREADS];
+
 	string arrivalTime;
 	string vehicleWeight;
 	string timeToCross;	
@@ -52,35 +55,37 @@ void readFile(){
 	arrivalTimeInt = atoi(arrivalTime.c_str());
 	vehicleWeightInt = atoi(vehicleWeight.c_str());
 	timeToCrossInt = atoi(timeToCross.c_str());
-
 	
 	// sleep(arrivalTime);
 	 
-		cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
-	 }
+	cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
+
+	int rc;
+
+       td[i].thread_id = licensePlate;
+      td[i].message = (char *)"This is message";
+      rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
+		
+      if (rc){
+         cout << "Error:unable to create thread," << rc << endl;
+         exit(-1);
+      }
+	}
 	// pthread_create(%licensePlate, NULL, vehicle, (void *)&td);
 }
 
 int main(int argc, char *argv[])
 {
-	pthread_t threads[NUM_THREADS];
-	struct thread_data td[NUM_THREADS];
+	
+	
 	//readFile();
-	int rc;
-    int i;
+	
 	//for( i=0; i < NUM_THREADS; i++ ){
 		readFile();
    //    cout <<"main() : creating thread, " << i << endl;
    //    cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
 
-   //    td[i].thread_id = i;
-   //    td[i].message = (char *)"This is message";
-   //    rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
-		
-   //    if (rc){
-   //       cout << "Error:unable to create thread," << rc << endl;
-   //       exit(-1);
-   //    }
+   
    // //}
 	
    pthread_exit(NULL);
