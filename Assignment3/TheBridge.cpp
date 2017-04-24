@@ -14,6 +14,11 @@ using namespace std;
 int static maxBridgeLoad = 10;
 int static currectBridgeLoad;
 
+string licensePlate;
+int arrivalTimeInt;
+int vehicleWeightInt;
+int timeToCrossInt;
+
 struct thread_data{
    int  thread_id;
    char *message;
@@ -24,43 +29,37 @@ void *PrintHello(void *threadarg) {
 
    my_data = (struct thread_data *) threadarg;
 
-   cout << "Thread ID : " << my_data->thread_id ;
-   cout << " Message : " << my_data->message << endl;
+   cout << "Vehicle: " << my_data->thread_id << " has ARRIVED at bridge." <<endl;
 
    pthread_exit(NULL);
 }
 
-// void readFile(){
+void readFile(){
+	string arrivalTime;
+	string vehicleWeight;
+	string timeToCross;	
+	ifstream infile("sample.txt");
+	for (int i = 0; i < NUM_THREADS; i++){
+	infile >> ws;
+	getline(infile, licensePlate, ' ');
+	infile >> ws;
+	getline(infile, arrivalTime, ' ');
+	infile >> ws;
+	getline(infile, vehicleWeight, ' ');
+	infile >> ws;
+	getline(infile, timeToCross);
 
-// 	string licensePlate;
-// 	string arrivalTime;
-// 	string vehicleWeight;
-// 	string timeToCross;
-// 	int arrivalTimeInt;
-// 	int vehicleWeightInt;
-// 	int timeToCrossInt;
-// 	ifstream infile("sample.txt");
-// 	infile >> ws;
-// 	getline(infile, licensePlate, ' ');
-// 	infile >> ws;
-// 	getline(infile, arrivalTime, ' ');
-// 	infile >> ws;
-// 	getline(infile, vehicleWeight, ' ');
-// 	infile >> ws;
-// 	getline(infile, timeToCross);
+	arrivalTimeInt = atoi(arrivalTime.c_str());
+	vehicleWeightInt = atoi(vehicleWeight.c_str());
+	timeToCrossInt = atoi(timeToCross.c_str());
 
-// 	arrivalTimeInt = atoi(arrivalTime.c_str());
-// 	vehicleWeightInt = atoi(vehicleWeight.c_str());
-// 	timeToCrossInt = atoi(timeToCross.c_str());
-
-// 	cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
-
-// 	sleep(arrivalTime);
-// 	for (int i = 0; i < NUM_THREADS; i++){
-		
-// 	}
-// 	pthread_create(%licensePlate, NULL, vehicle, (void *)&td);
-// }
+	
+	// sleep(arrivalTime);
+	 
+		cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
+	 }
+	// pthread_create(%licensePlate, NULL, vehicle, (void *)&td);
+}
 
 int main(int argc, char *argv[])
 {
@@ -68,18 +67,21 @@ int main(int argc, char *argv[])
 	struct thread_data td[NUM_THREADS];
 	//readFile();
 	int rc;
-   int i;
-	   for( i=0; i < NUM_THREADS; i++ ){
-      cout <<"main() : creating thread, " << i << endl;
-      td[i].thread_id = i;
-      td[i].message = (char *)"This is message";
-      rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
+    int i;
+	//for( i=0; i < NUM_THREADS; i++ ){
+		readFile();
+   //    cout <<"main() : creating thread, " << i << endl;
+   //    cout << "License Plate: " << licensePlate << " Arrival Time: " << arrivalTimeInt << " Weight: " << vehicleWeightInt << " Time To Cross: " << timeToCrossInt << endl;
+
+   //    td[i].thread_id = i;
+   //    td[i].message = (char *)"This is message";
+   //    rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
 		
-      if (rc){
-         cout << "Error:unable to create thread," << rc << endl;
-         exit(-1);
-      }
-   }
+   //    if (rc){
+   //       cout << "Error:unable to create thread," << rc << endl;
+   //       exit(-1);
+   //    }
+   // //}
 	
    pthread_exit(NULL);
 }
