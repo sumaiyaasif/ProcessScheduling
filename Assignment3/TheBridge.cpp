@@ -9,9 +9,9 @@
 
 using namespace std;
 
-#define NUM_THREADS	5
+#define NUM_THREADS	7
 
-int static maxBridgeLoad = 10;
+int static maxBridgeLoad;
 int static currectBridgeLoad = 0;
 
 static pthread_mutex_t mylock;
@@ -66,6 +66,20 @@ void *PrintHello(void *threadarg) {
 }
 
 void readFile(){
+
+}
+
+int main(int argc, char *argv[])
+{
+	// ifstream inputFile(argv[1]);
+	// if(!inputFile.is_open()){
+	// 	cout << "Could not open file.\n";
+	// 	exit(0);
+	// }
+	maxBridgeLoad = atoi(argv[1]);
+	cout << "Maximum bridge load is " << maxBridgeLoad << endl;
+
+	ifstream inputFile("sample3.txt");
 	pthread_t threads[NUM_THREADS];
 	struct thread_data td[NUM_THREADS];
 	string licensePlate;
@@ -75,18 +89,18 @@ void readFile(){
 	string arrivalTime;
 	string vehicleWeight;
 	string timeToCross;	
-	ifstream infile("sample3.txt");
+	//ifstream inputFile("sample3.txt");
 
 	for (int i = 0; i < NUM_THREADS; i++){
 
-	infile >> ws;
-	getline(infile, licensePlate, ' ');
-	infile >> ws;
-	getline(infile, arrivalTime, ' ');
-	infile >> ws;
-	getline(infile, vehicleWeight, ' ');
-	infile >> ws;
-	getline(infile, timeToCross);
+	inputFile >> ws;
+	getline(inputFile, licensePlate, ' ');
+	inputFile >> ws;
+	getline(inputFile, arrivalTime, ' ');
+	inputFile >> ws;
+	getline(inputFile, vehicleWeight, ' ');
+	inputFile >> ws;
+	getline(inputFile, timeToCross);
 
 	td[i].arrivalTimeInt = atoi(arrivalTime.c_str());
 	td[i].vehicleWeightInt = atoi(vehicleWeight.c_str());
@@ -107,10 +121,6 @@ void readFile(){
 	}
 	for (int i = 0; i < NUM_THREADS; i++)
 	 	pthread_join(threads[i], NULL);
-}
-
-int main(int argc, char *argv[])
-{
 	pthread_mutex_init(&mylock, NULL);
 	readFile();
     pthread_exit(NULL);
