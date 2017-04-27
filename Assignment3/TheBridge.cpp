@@ -76,12 +76,7 @@ int main(int argc, char *argv[])
 	// 	cout << "Could not open file.\n";
 	// 	exit(0);
 	// }
-	maxBridgeLoad = atoi(argv[1]);
-	cout << "Maximum bridge load is " << maxBridgeLoad << endl;
-
-	ifstream inputFile("sample3.txt");
-	pthread_t threads[NUM_THREADS];
-	struct thread_data td[NUM_THREADS];
+	string x;
 	string licensePlate;
 	int arrivalTimeInt;
 	int vehicleWeightInt;
@@ -89,39 +84,42 @@ int main(int argc, char *argv[])
 	string arrivalTime;
 	string vehicleWeight;
 	string timeToCross;	
-	//ifstream inputFile("sample3.txt");
-
-	for (int i = 0; i < NUM_THREADS; i++){
-
-	inputFile >> ws;
-	getline(inputFile, licensePlate, ' ');
-	inputFile >> ws;
-	getline(inputFile, arrivalTime, ' ');
-	inputFile >> ws;
-	getline(inputFile, vehicleWeight, ' ');
-	inputFile >> ws;
-	getline(inputFile, timeToCross);
-
-	td[i].arrivalTimeInt = atoi(arrivalTime.c_str());
-	td[i].vehicleWeightInt = atoi(vehicleWeight.c_str());
-	td[i].timeToCrossInt = atoi(timeToCross.c_str());
-	td[i].thread_id = licensePlate;
-
-	sleep(td[i].arrivalTimeInt);
-	 
-	cout << "License Plate: " << td[i].thread_id << " Arrival Time: " << td[i].arrivalTimeInt << " Weight: " << td[i].vehicleWeightInt << " Time To Cross: " << td[i].timeToCrossInt << endl;
-
-	int rc;
-
-    rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
-    if (rc){
-    	cout << "Error:unable to create thread," << rc << endl;
-        exit(-1);
-      }
-	}
-	for (int i = 0; i < NUM_THREADS; i++)
-	 	pthread_join(threads[i], NULL);
+	maxBridgeLoad = atoi(argv[1]);
+	cout << "Maximum bridge load is " << maxBridgeLoad << endl;
+	pthread_t threads[NUM_THREADS];
+	struct thread_data td[NUM_THREADS];
 	pthread_mutex_init(&mylock, NULL);
-	readFile();
-    pthread_exit(NULL);
+	int i = 0;
+	while(cin >> licensePlate) {
+		//cin >> licensePlate;
+		cin >> arrivalTime;
+		cin >> vehicleWeight;
+		cin >> timeToCross;
+
+		td[i].arrivalTimeInt = atoi(arrivalTime.c_str());
+	 	td[i].vehicleWeightInt = atoi(vehicleWeight.c_str());
+	 	td[i].timeToCrossInt = atoi(timeToCross.c_str());
+	 	td[i].thread_id = licensePlate;
+
+	 sleep(td[i].arrivalTimeInt);
+	 
+	 cout << "License Plate: " << td[i].thread_id << " Arrival Time: " << td[i].arrivalTimeInt << " Weight: " << td[i].vehicleWeightInt << " Time To Cross: " << td[i].timeToCrossInt << endl;
+
+	 int rc;
+
+     rc = pthread_create(&threads[i], NULL, PrintHello, (void *)&td[i]);
+     if (rc){
+     	cout << "Error:unable to create thread," << rc << endl;
+         exit(-1);
+       }
+       i++;
+	}
+
+	 for (int i = 0; i < NUM_THREADS; i++){
+	 	pthread_join(threads[i], NULL);
+	 }
+	  	
+	 
+	 readFile();
+     pthread_exit(NULL);
 }
